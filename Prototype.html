@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>배달앱 주문 - Prototype 패턴</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            gap: 20px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+            border-bottom: 2px solid #ff6b6b;
+            padding-bottom: 10px;
+        }
+
+        .menu-section {
+            margin-bottom: 25px;
+        }
+
+        .menu-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .menu-item:hover {
+            border-color: #ff6b6b;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .menu-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .menu-item-name {
+            font-weight: 600;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .menu-item-price {
+            color: #ff6b6b;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .menu-options {
+            margin-top: 10px;
+        }
+
+        .option-group {
+            margin-bottom: 10px;
+        }
+
+        .option-label {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .option-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .option-btn {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .option-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .option-btn.selected {
+            background: #ff6b6b;
+            color: white;
+            border-color: #ff6b6b;
+        }
+
+        .option-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .quantity-btn {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .quantity-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .quantity-value {
+            font-weight: 600;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        .order-summary {
+            position: sticky;
+            top: 20px;
+        }
+
+        .order-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .order-item-info {
+            flex: 1;
+        }
+
+        .order-item-name {
+            font-weight: 600;
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .order-item-details {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .order-item-price {
+            font-weight: 700;
+            color: #ff6b6b;
+            font-size: 14px;
+        }
+
+        .total-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #ddd;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .total-row.final {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ff6b6b;
+            margin-top: 10px;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #ee5a6f;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .previous-orders {
+            margin-top: 20px;
+        }
+
+        .previous-order-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .previous-order-item:hover {
+            border-color: #ff6b6b;
+        }
+
+        .previous-order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .previous-order-date {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .previous-order-summary {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            color: #856404;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            color: #721c24;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            color: #0c5460;
+        }
+
+        .info-panel {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .info-panel strong {
+            color: #333;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center; color: white; margin-bottom: 10px; padding-top: 20px;">배달앱 주문 시스템</h1>
+    <p class="subtitle" style="text-align: center; color: rgba(255,255,255,0.9); margin-bottom: 30px;">Prototype 패턴으로 구현</p>
+
+    <div class="container">
+        <div class="panel">
+            <h2>메뉴 선택</h2>
+            <div id="menuContainer"></div>
+        </div>
+
+        <div class="panel order-summary">
+            <h2>주문 내역</h2>
+            <div id="orderContainer"></div>
+            <div class="total-section">
+                <div class="total-row">
+                    <span>소계</span>
+                    <span id="subtotal">0원</span>
+                </div>
+                <div class="total-row">
+                    <span>배달비</span>
+                    <span>3,000원</span>
+                </div>
+                <div class="total-row final">
+                    <span>총 결제금액</span>
+                    <span id="total">3,000원</span>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="orderBtn">주문하기</button>
+                <button class="btn btn-secondary" id="clearBtn">주문 초기화</button>
+            </div>
+            <div class="previous-orders">
+                <h2 style="margin-top: 20px;">이전 주문</h2>
+                <div id="previousOrdersContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-panel" style="max-width: 1200px; margin: 20px auto; background: rgba(255,255,255,0.95);">
+        <strong>Prototype 패턴 구조:</strong><br>
+        • Order 클래스: clone() 메서드로 자기 자신을 복제<br>
+        • 복제된 주문은 원본과 독립적으로 수정 가능<br>
+        • 복제 후 validateWithCurrentState()로 현재 상태와 비교<br>
+        • 품절, 가격 변동, 옵션 변경 등을 자동으로 감지하여 사용자에게 알림
+    </div>
+
+    <script>
+        // ============================================
+        // Prototype 패턴 구현
+        // 기존 객체를 복제하여 새 객체를 만드는 패턴
+        // ============================================
+
+        // ========== 메뉴 아이템 클래스들 ==========
+
+        class MenuItem {
+            constructor(name, basePrice) {
+                this.name = name;
+                this.basePrice = basePrice;
+                this.quantity = 1;
+                this.options = {};
+            }
+
+            calculatePrice() {
+                let price = this.basePrice;
+                // 옵션별 추가 가격 계산
+                for (let key in this.options) {
+                    if (this.options[key] && typeof this.options[key] === 'object') {
+                        price += this.options[key].price || 0;
+                    }
+                }
+                return price * this.quantity;
+            }
+
+            clone() {
+                const cloned = new MenuItem(this.name, this.basePrice);
+                cloned.quantity = this.quantity;
+                cloned.options = JSON.parse(JSON.stringify(this.options));
+                return cloned;
+            }
+
+            getDescription() {
+                let desc = this.name;
+                const optionTexts = [];
+                for (let key in this.options) {
+                    if (this.options[key]) {
+                        if (typeof this.options[key] === 'object') {
+                            optionTexts.push(this.options[key].name);
+                        } else {
+                            optionTexts.push(this.options[key]);
+                        }
+                    }
+                }
+                if (optionTexts.length > 0) {
+                    desc += ` (${optionTexts.join(', ')})`;
+                }
+                return desc;
+            }
+        }
+
+        // ========== 주문 클래스 (Prototype) ==========
+
+        class Order {
+            constructor() {
+                this.items = [];
+                this.orderDate = new Date();
+            }
+
+            addItem(item) {
+                this.items.push(item);
+            }
+
+            removeItem(index) {
+                this.items.splice(index, 1);
+            }
+
+            calculateTotal() {
+                const subtotal = this.items.reduce((sum, item) => sum + item.calculatePrice(), 0);
+                const deliveryFee = 3000;
+                return {
+                    subtotal: subtotal,
+                    deliveryFee: deliveryFee,
+                    total: subtotal + deliveryFee
+                };
+            }
+
+            // Prototype 패턴의 핵심: clone() 메서드
+            clone() {
+                const clonedOrder = new Order();
+                clonedOrder.items = this.items.map(item => item.clone());
+                clonedOrder.orderDate = new Date(this.orderDate);
+                return clonedOrder;
+            }
+
+            // 복제 후 현재 상태와 비교
+            validateWithCurrentState(currentMenuState) {
+                const issues = [];
+
+                this.items.forEach((item, index) => {
+                    const currentItem = currentMenuState.find(m => m.name === item.name);
+                    
+                    if (!currentItem) {
+                        issues.push({
+                            type: 'unavailable',
+                            item: item,
+                            message: `${item.getDescription()} - 메뉴가 더 이상 제공되지 않습니다.`
+                        });
+                        return;
+                    }
+
+                    // 가격 변동 확인
+                    if (item.basePrice !== currentItem.basePrice) {
+                        issues.push({
+                            type: 'price_changed',
+                            item: item,
+                            oldPrice: item.basePrice,
+                            newPrice: currentItem.basePrice,
+                            message: `${item.name}의 가격이 ${item.basePrice.toLocaleString()}원에서 ${currentItem.basePrice.toLocaleString()}원으로 변경되었습니다.`
+                        });
+                    }
+
+                    // 옵션 가용성 확인
+                    for (let optionKey in item.options) {
+                        if (item.options[optionKey]) {
+                            const optionValue = typeof item.options[optionKey] === 'object' 
+                                ? item.options[optionKey].name 
+                                : item.options[optionKey];
+                            
+                            const currentOption = currentItem.options[optionKey];
+                            if (!currentOption || 
+                                (Array.isArray(currentOption) && !currentOption.find(o => 
+                                    (typeof o === 'object' ? o.name : o) === optionValue
+                                ))) {
+                                issues.push({
+                                    type: 'option_unavailable',
+                                    item: item,
+                                    option: optionValue,
+                                    message: `${item.name}의 "${optionValue}" 옵션이 더 이상 제공되지 않습니다.`
+                                });
+                            }
+                        }
+                    }
+
+                    // 품절 확인
+                    if (currentItem.outOfStock) {
+                        issues.push({
+                            type: 'out_of_stock',
+                            item: item,
+                            message: `${item.getDescription()} - 현재 품절입니다.`
+                        });
+                    }
+                });
+
+                return issues;
+            }
+
+            getSummary() {
+                return this.items.map(item => 
+                    `${item.getDescription()} x${item.quantity}`
+                ).join(', ');
+            }
+        }
+
+        // ========== 애플리케이션 상태 ==========
+
+        class DeliveryApp {
+            constructor() {
+                this.currentOrder = new Order();
+                this.previousOrders = [];
+                this.menuState = this.initializeMenu();
+                this.render();
+            }
+
+            initializeMenu() {
+                return [
+                    {
+                        name: '떡볶이',
+                        basePrice: 8000,
+                        options: {
+                            spice: [
+                                { name: '순한맛', price: 0 },
+                                { name: '보통맛', price: 0 },
+                                { name: '매운맛', price: 0 }
+                            ],
+                            topping: [
+                                { name: '치즈 추가', price: 2000 },
+                                { name: '어묵 추가', price: 1500 },
+                                { name: '계란 추가', price: 1000 }
+                            ]
+                        }
+                    },
+                    {
+                        name: '순대',
+                        basePrice: 5000,
+                        options: {
+                            quantity: [1, 2, 3, 4]
+                        }
+                    },
+                    {
+                        name: '튀김',
+                        basePrice: 4000,
+                        options: {
+                            type: [
+                                { name: '오징어튀김', price: 0 },
+                                { name: '김말이', price: 0 },
+                                { name: '고구마튀김', price: 0 },
+                                { name: '새우튀김', price: 1000 }
+                            ]
+                        }
+                    },
+                    {
+                        name: '콜라',
+                        basePrice: 2000,
+                        options: {
+                            quantity: [1, 2, 3, 4, 5]
+                        }
+                    }
+                ];
+            }
+
+            render() {
+                this.renderMenu();
+                this.renderOrder();
+                this.renderPreviousOrders();
+            }
+
+            renderMenu() {
+                const container = document.getElementById('menuContainer');
+                container.innerHTML = '';
+
+                this.menuState.forEach(menuItem => {
+                    const div = document.createElement('div');
+                    div.className = 'menu-item';
+                    if (menuItem.outOfStock) {
+                        div.style.opacity = '0.6';
+                    }
+
+                    let html = `
+                        <div class="menu-item-header">
+                            <span class="menu-item-name">${menuItem.name}${menuItem.outOfStock ? ' (품절)' : ''}</span>
+                            <span class="menu-item-price">${menuItem.basePrice.toLocaleString()}원</span>
+                        </div>
+                    `;
+
+                    // 옵션 렌더링
+                    for (let optionKey in menuItem.options) {
+                        const options = menuItem.options[optionKey];
+                        html += `
+                            <div class="option-group">
+                                <span class="option-label">${this.getOptionLabel(optionKey)}:</span>
+                                <div class="option-buttons">
+                        `;
+                        
+                        options.forEach(option => {
+                            const optionName = typeof option === 'object' ? option.name : option;
+                            const optionPrice = typeof option === 'object' ? option.price : 0;
+                            const priceText = optionPrice > 0 ? ` (+${optionPrice.toLocaleString()}원)` : '';
+                            html += `
+                                <button class="option-btn" 
+                                        data-menu="${menuItem.name}" 
+                                        data-option="${optionKey}" 
+                                        data-value="${optionName}"
+                                        ${menuItem.outOfStock ? 'disabled class="disabled"' : ''}>
+                                    ${optionName}${priceText}
+                                </button>
+                            `;
+                        });
+                        
+                        html += `</div></div>`;
+                    }
+
+                    // 수량 컨트롤
+                    html += `
+                        <div class="quantity-control">
+                            <span class="option-label">수량:</span>
+                            <button class="quantity-btn" data-menu="${menuItem.name}" data-action="decrease" ${menuItem.outOfStock ? 'disabled' : ''}>-</button>
+                            <span class="quantity-value" id="qty-${menuItem.name}">1</span>
+                            <button class="quantity-btn" data-menu="${menuItem.name}" data-action="increase" ${menuItem.outOfStock ? 'disabled' : ''}>+</button>
+                        </div>
+                        <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" 
+                                data-menu="${menuItem.name}" 
+                                ${menuItem.outOfStock ? 'disabled' : ''}>
+                            담기
+                        </button>
+                    `;
+
+                    div.innerHTML = html;
+                    container.appendChild(div);
+                });
+
+                // 이벤트 리스너
+                container.querySelectorAll('.option-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        if (btn.disabled) return;
+                        const menuName = btn.dataset.menu;
+                        const optionKey = btn.dataset.option;
+                        const optionValue = btn.dataset.value;
+                        
+                        // 같은 옵션 그룹의 다른 버튼들 해제
+                        const menuItem = container.querySelector(`[data-menu="${menuName}"]`).closest('.menu-item');
+                        menuItem.querySelectorAll(`[data-option="${optionKey}"]`).forEach(b => {
+                            b.classList.remove('selected');
+                        });
+                        btn.classList.add('selected');
+                    });
+                });
+
+                container.querySelectorAll('.quantity-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        if (btn.disabled) return;
+                        const menuName = btn.dataset.menu;
+                        const action = btn.dataset.action;
+                        const qtySpan = document.getElementById(`qty-${menuName}`);
+                        let qty = parseInt(qtySpan.textContent);
+                        
+                        if (action === 'increase') {
+                            qty++;
+                        } else if (action === 'decrease' && qty > 1) {
+                            qty--;
+                        }
+                        qtySpan.textContent = qty;
+                    });
+                });
+
+                container.querySelectorAll('[data-menu]').forEach(btn => {
+                    if (btn.textContent === '담기') {
+                        btn.addEventListener('click', (e) => {
+                            if (btn.disabled) return;
+                            this.addToOrder(btn.dataset.menu);
+                        });
+                    }
+                });
+            }
+
+            getOptionLabel(key) {
+                const labels = {
+                    spice: '맵기',
+                    topping: '토핑',
+                    quantity: '수량',
+                    type: '종류'
+                };
+                return labels[key] || key;
+            }
+
+            addToOrder(menuName) {
+                const menuItem = this.menuState.find(m => m.name === menuName);
+                if (!menuItem || menuItem.outOfStock) return;
+
+                const item = new MenuItem(menuItem.name, menuItem.basePrice);
+                
+                // 선택된 옵션들 가져오기
+                const menuElement = document.querySelector(`[data-menu="${menuName}"]`).closest('.menu-item');
+                const qty = parseInt(document.getElementById(`qty-${menuName}`).textContent);
+                item.quantity = qty;
+
+                for (let optionKey in menuItem.options) {
+                    const selectedBtn = menuElement.querySelector(`[data-option="${optionKey}"].selected`);
+                    if (selectedBtn) {
+                        const optionValue = selectedBtn.dataset.value;
+                        const optionData = menuItem.options[optionKey].find(o => 
+                            (typeof o === 'object' ? o.name : o) === optionValue
+                        );
+                        
+                        if (typeof optionData === 'object') {
+                            item.options[optionKey] = optionData;
+                        } else {
+                            item.options[optionKey] = optionData;
+                        }
+                    } else if (optionKey === 'quantity') {
+                        // 수량은 별도로 처리
+                        item.options[optionKey] = qty;
+                    }
+                }
+
+                this.currentOrder.addItem(item);
+                this.renderOrder();
+            }
+
+            renderOrder() {
+                const container = document.getElementById('orderContainer');
+                container.innerHTML = '';
+
+                if (this.currentOrder.items.length === 0) {
+                    container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">주문 내역이 없습니다.</p>';
+                    document.getElementById('subtotal').textContent = '0원';
+                    document.getElementById('total').textContent = '3,000원';
+                    return;
+                }
+
+                this.currentOrder.items.forEach((item, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'order-item';
+                    div.innerHTML = `
+                        <div class="order-item-info">
+                            <div class="order-item-name">${item.getDescription()}</div>
+                            <div class="order-item-details">수량: ${item.quantity}</div>
+                        </div>
+                        <div class="order-item-price">${item.calculatePrice().toLocaleString()}원</div>
+                        <button class="quantity-btn" onclick="app.removeFromOrder(${index})" style="margin-left: 10px;">×</button>
+                    `;
+                    container.appendChild(div);
+                });
+
+                const totals = this.currentOrder.calculateTotal();
+                document.getElementById('subtotal').textContent = totals.subtotal.toLocaleString() + '원';
+                document.getElementById('total').textContent = totals.total.toLocaleString() + '원';
+            }
+
+            removeFromOrder(index) {
+                this.currentOrder.removeItem(index);
+                this.renderOrder();
+            }
+
+            renderPreviousOrders() {
+                const container = document.getElementById('previousOrdersContainer');
+                container.innerHTML = '';
+
+                if (this.previousOrders.length === 0) {
+                    container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">이전 주문이 없습니다.</p>';
+                    return;
+                }
+
+                this.previousOrders.forEach((order, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'previous-order-item';
+                    const totals = order.calculateTotal();
+                    const dateStr = order.orderDate.toLocaleDateString('ko-KR', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                    
+                    div.innerHTML = `
+                        <div class="previous-order-header">
+                            <strong>${dateStr} 주문</strong>
+                            <span class="previous-order-date">${totals.total.toLocaleString()}원</span>
+                        </div>
+                        <div class="previous-order-summary">${order.getSummary()}</div>
+                        <button class="btn btn-secondary" onclick="app.reorder(${index})" style="width: 100%;">
+                            이전 주문 다시 담기
+                        </button>
+                    `;
+                    container.appendChild(div);
+                });
+            }
+
+            reorder(orderIndex) {
+                const previousOrder = this.previousOrders[orderIndex];
+                
+                // Prototype 패턴: clone() 메서드로 주문 복제
+                const clonedOrder = previousOrder.clone();
+                
+                // 복제된 주문을 현재 주문으로 설정
+                this.currentOrder = clonedOrder;
+                
+                // 현재 상태와 비교하여 문제점 확인
+                const issues = clonedOrder.validateWithCurrentState(this.menuState);
+                
+                // 문제점이 있으면 알림 표시
+                if (issues.length > 0) {
+                    const container = document.getElementById('orderContainer');
+                    container.innerHTML = '';
+                    
+                    issues.forEach(issue => {
+                        const alert = document.createElement('div');
+                        alert.className = `alert alert-${issue.type === 'unavailable' || issue.type === 'out_of_stock' ? 'error' : 'warning'}`;
+                        alert.textContent = issue.message;
+                        container.appendChild(alert);
+                    });
+                } else {
+                    // 문제가 없으면 성공 메시지
+                    const container = document.getElementById('orderContainer');
+                    const alert = document.createElement('div');
+                    alert.className = 'alert alert-info';
+                    alert.textContent = '이전 주문이 성공적으로 복제되었습니다. 모든 메뉴와 옵션이 정상적으로 담겼습니다.';
+                    container.insertBefore(alert, container.firstChild);
+                }
+                
+                this.renderOrder();
+            }
+
+            placeOrder() {
+                if (this.currentOrder.items.length === 0) {
+                    alert('주문할 메뉴를 선택해주세요.');
+                    return;
+                }
+
+                // 현재 주문을 이전 주문 목록에 추가 (복제하여 저장)
+                const orderToSave = this.currentOrder.clone();
+                this.previousOrders.unshift(orderToSave);
+                
+                // 최대 5개까지만 저장
+                if (this.previousOrders.length > 5) {
+                    this.previousOrders.pop();
+                }
+
+                const totals = this.currentOrder.calculateTotal();
+                alert(`주문이 완료되었습니다!\n\n총 결제금액: ${totals.total.toLocaleString()}원\n\n이제 "이전 주문 다시 담기" 버튼으로 쉽게 재주문할 수 있습니다.`);
+                
+                // 주문 초기화
+                this.currentOrder = new Order();
+                this.render();
+            }
+
+            clearOrder() {
+                if (confirm('주문을 초기화하시겠습니까?')) {
+                    this.currentOrder = new Order();
+                    this.renderOrder();
+                }
+            }
+
+            // 시뮬레이션: 메뉴 상태 변경 (품절, 가격 변동 등)
+            simulateMenuChanges() {
+                // 순대 품절
+                const sundae = this.menuState.find(m => m.name === '순대');
+                if (sundae) sundae.outOfStock = true;
+                
+                // 튀김 가격 인상
+                const twigim = this.menuState.find(m => m.name === '튀김');
+                if (twigim) twigim.basePrice = 4500;
+                
+                // 치즈 토핑 제거 (시뮬레이션)
+                const tteokbokki = this.menuState.find(m => m.name === '떡볶이');
+                if (tteokbokki && tteokbokki.options.topping) {
+                    tteokbokki.options.topping = tteokbokki.options.topping.filter(t => t.name !== '치즈 추가');
+                }
+            }
+        }
+
+        // ========== 초기화 및 이벤트 바인딩 ==========
+
+        let app;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            app = new DeliveryApp();
+            
+            // 샘플 이전 주문 추가 (시연용)
+            const sampleOrder = new Order();
+            const tteokbokki = new MenuItem('떡볶이', 8000);
+            tteokbokki.quantity = 1;
+            tteokbokki.options.spice = { name: '매운맛', price: 0 };
+            tteokbokki.options.topping = { name: '치즈 추가', price: 2000 };
+            sampleOrder.addItem(tteokbokki);
+            
+            const sundae = new MenuItem('순대', 5000);
+            sundae.quantity = 2;
+            sampleOrder.addItem(sundae);
+            
+            const twigim1 = new MenuItem('튀김', 4000);
+            twigim1.quantity = 1;
+            twigim1.options.type = { name: '오징어튀김', price: 0 };
+            sampleOrder.addItem(twigim1);
+            
+            const twigim2 = new MenuItem('튀김', 4000);
+            twigim2.quantity = 1;
+            twigim2.options.type = { name: '김말이', price: 0 };
+            sampleOrder.addItem(twigim2);
+            
+            const cola = new MenuItem('콜라', 2000);
+            cola.quantity = 2;
+            sampleOrder.addItem(cola);
+            
+            sampleOrder.orderDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000); // 일주일 전
+            app.previousOrders.push(sampleOrder);
+            
+            // 메뉴 상태 변경 시뮬레이션
+            app.simulateMenuChanges();
+            app.render();
+            
+            // 버튼 이벤트
+            document.getElementById('orderBtn').addEventListener('click', () => app.placeOrder());
+            document.getElementById('clearBtn').addEventListener('click', () => app.clearOrder());
+        });
+    </script>
+</body>
+</html>
+
